@@ -1,0 +1,13 @@
+name = "Fibra"
+uuid = "06ee0f18-ba6e-4056-8a72-49a37fb2018e"
+authors = ["Mark Prandolini"]
+version = "1.0.0-DEV"
+
+[compat]
+julia = "1.10.10"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
