@@ -1,4 +1,4 @@
-using Fibra
+using Main.Fibra
 using Test
 
 @testset "Fibra.jl" begin
