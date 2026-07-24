@@ -7,14 +7,12 @@ Units: time [ps], wavelength [nm], freq. [THz], power [W], length [km]
 Nonlinear Aeff [µm^2], n2 [1e-16 cm^2/W], gamma [1/(W km)], beta [ps^n/km]
 
 =#
-using FFTW
-using Random
-using LinearAlgebra
-using Plots
+#using FFTW
+#using Random
+#using LinearAlgebra
+#using Plots
 using Printf
-gr()
 
-# fuck off
 include("fiber_types.jl")
 include("phys_const.jl")
 include("math_func.jl") 
