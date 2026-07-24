@@ -1,48 +1,6 @@
-MIT License
 
-Copyright (c) 2026 Mark Prandolini
 
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
 
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-"""
-    coupler(u1i, u2i, rho)
-
-Directional coupler.
-
-# Arguments
-- `u1i`: Input field 1
-- `u2i`: Input field 2
-- `rho`: Coupling ratio (clamped to [0, 1])
-
-# Returns
-- `u1o`: Output field 1
-- `u2o`: Output field 2
-"""
-function coupler(u1i, u2i, rho)
-    # Clamp rho to the interval [0, 1]
-    rho = clamp(rho, 0.0, 1.0)
-
-    u1o = sqrt(rho) * u1i + im * sqrt(1 - rho) * u2i
-    u2o = im * sqrt(1 - rho) * u1i + sqrt(rho) * u2i
-
-    return u1o, u2o
-end
 
 """
     filter_gauss(ui, f3dB, fc, n, fo, df)

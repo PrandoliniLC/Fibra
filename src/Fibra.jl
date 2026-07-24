@@ -7,10 +7,6 @@ Units: time [ps], wavelength [nm], freq. [THz], power [W], length [km]
 Nonlinear Aeff [µm^2], n2 [1e-16 cm^2/W], gamma [1/(W km)], beta [ps^n/km]
 
 =#
-#using FFTW
-#using Random
-#using LinearAlgebra
-#using Plots
 using Printf
 
 include("fiber_types.jl")
@@ -68,6 +64,9 @@ P_peak = N2 * abs(smf1.beta[3]) / (smf1.gamma * tfwhm^2)
 u0 = sqrt(P_peak) .* sech.(t ./ tfwhm)          # W^0.5
 u0 = math_func.generate_normal_number(0, 10, nt) .* u0
 PeakPower = maximum(abs2.(u0))
+
+@show typeof(u0)
+
 
 @printf("\n----------------------------------------------\n")
 @printf("Input Peak Power (W) = %5.2f\n", PeakPower)
