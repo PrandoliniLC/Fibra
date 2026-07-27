@@ -9,8 +9,9 @@ Nonlinear Aeff [µm^2], n2 [1e-16 cm^2/W], gamma [1/(W km)], beta [ps^n/km]
 =#
 using Printf
 
-include("fiber_types.jl")
 include("phys_const.jl")
+include("fiber_types.jl")
+include("optic_types.jl")
 include("math_func.jl") 
 
 # =========================================================================
@@ -29,6 +30,15 @@ nt   = 2^11                      # number of spectral points
 time = 70.0                      # ps
 dt   = time / nt                 # ps
 t    = collect(-time/2 : dt : (time/2 - dt))   # ps
+
+df = 1 / (nt * dt)                             # frequency separation (THz)
+f  = collect((-(nt/2)) : 1 : (nt/2 - 1)) .* df # frequency vector (THz)
+lambda = phys_const.c ./ (f .+ phys_const.c / lamda0)                # wavelength vector (nm)
+w  = 2pi .* f                                  # angular frequency vector
+
+dz  = 0.000001         # longitudinal step (km)
+tol = 0.05e-5           # local error tolerance for the propagation solver
+
 # -------------------------------------------------------------------------
 
 # =========================================================================
@@ -74,12 +84,12 @@ PeakPower = maximum(abs2.(u0))
 b = dt * sum(abs2.(u0))
 @printf("Input Pulse Energy in pJ = %5.2f\n", b)
 
-#=
-# filter parameters
-filt = FilterParams(lamda0, 30.0, 0.0, 0.0, 1)
-filt.fc   = c / filt.lamda_c
-filt.f3dB = c / (filt.lamda_c)^2 * filt.landa_bw
+# ==========================================================================
+# Filter parameters
+# ==========================================================================
+filt = optic_types.filter(f0, 30.0, df, 1) # Center Freq., Bandwidth, Freq. Step, order
 
+#=
 # coupler parameters
 rho     = 0.5    # NALM
 rho_out = 0.60   # Output coupler

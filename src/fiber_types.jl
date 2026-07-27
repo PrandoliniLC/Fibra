@@ -92,15 +92,15 @@ end # module fiber_types
 Directional coupler.
 
 # Arguments
-- `u1i`: Input field 1
-- `u2i`: Input field 2
+- `u1i`: Complex Input field 1
+- `u2i`: Complex Input field 2
 - `rho`: Coupling ratio (clamped to [0, 1])
 
 # Returns
-- `u1o`: Output field 1
-- `u2o`: Output field 2
+- `u1o`: Complex Output field 1
+- `u2o`: Complex Output field 2
 """
-function coupler(u1i, u2i, rho)
+function coupler(u1i::Complex{Float64}, u2i::Complex{Float64}, rho::Float64)
     # Clamp rho to the interval [0, 1]
     rho = clamp(rho, 0.0, 1.0)
 

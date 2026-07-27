@@ -2,9 +2,8 @@ module  optic_types
 import FFTW
 
 mutable struct filter
-    lam0::Float64           # [nm] Center of the filter
-    BW::Float64             # [nm] Bandwidth FWHM
     f0::Float64             # THz Center Freq. 
+    BW::Float64             # [nm] Bandwidth FWHM
     df::Float64             # Thz Frequency spacing
     n::Int                  # Super-Gaussian order n=1,2,3,4
 end
@@ -38,6 +37,7 @@ function filter_gauss(ui::Complex{Float64}, fl::filter)
     return uo
 end
 
+#=
 """
     filter_lorentz_t(ui::Complex{Float64}, fl::filter)
 
@@ -66,7 +66,7 @@ function filter_lorentz_tf(ui::Complex{Float64}, fl::filter)
 
     return uo
 end
-
+=#
 
 
 end # module optic_types
