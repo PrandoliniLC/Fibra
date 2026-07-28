@@ -38,13 +38,12 @@ w  = 2pi .* f                                  # angular frequency vector
 
 dz  = 0.000001         # longitudinal step (km)
 tol = 0.05e-5           # local error tolerance for the propagation solver
-
 # -------------------------------------------------------------------------
 
 # =========================================================================
 # Initial fiber parameters
 # =========================================================================
-smf1 = fiber_types.create_smf(fiber_types.PM1950, 1.0, lamda0)
+smf1 = fiber_types.create_nasmf(fiber_types.PM1950, 1.0, lamda0)
 
 smf2 = smf1
 smf2.length = 0.0003
@@ -83,42 +82,26 @@ PeakPower = maximum(abs2.(u0))
 
 b = dt * sum(abs2.(u0))
 @printf("Input Pulse Energy in pJ = %5.2f\n", b)
+# --------------------------------------------------------------------------
 
 # ==========================================================================
 # Filter parameters
 # ==========================================================================
 filt = optic_types.filter(f0, 30.0, df, 1) # Center Freq., Bandwidth, Freq. Step, order
+# --------------------------------------------------------------------------
 
-#=
+# ==========================================================================
 # coupler parameters
+# ==========================================================================
 rho     = 0.5    # NALM
 rho_out = 0.60   # Output coupler
+# --------------------------------------------------------------------------
 
+# ==========================================================================
 # NRPS (nonreciprocal phase shift for the NALM)
+# ==========================================================================
 PhaseShift = 95 * pi / 180
+# --------------------------------------------------------------------------
 
-
-# -------------------------------------------------------------------
-# Numerical parameters
-# -------------------------------------------------------------------
-nt   = 2^11                      # number of spectral points
-time = 70.0                      # ps
-dt   = time / nt                 # ps
-t    = collect(-time/2 : dt : (time/2 - dt))   # ps
-
-df = 1 / (nt * dt)                             # frequency separation (THz)
-f  = collect((-(nt/2)) : 1 : (nt/2 - 1)) .* df # frequency vector (THz)
-lambda = c ./ (f .+ c / lamda0)                # wavelength vector (nm)
-w  = 2pi .* f                                  # angular frequency vector
-
-dz  = 0.000001         # longitudinal step (km)
-tol = 0.05e-5           # local error tolerance for the propagation solver
-
-# -------------------------------------------------------------------
-# Input field
-# -------------------------------------------------------------------
-
-
-=#
 
 end

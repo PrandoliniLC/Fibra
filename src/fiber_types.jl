@@ -2,22 +2,24 @@ module fiber_types
 
 include("phys_const.jl")
 
-mutable struct smf # sigle mode fiber
+abstract type smf end
+
+mutable struct nasmf <: smf # non-active single mode fiber
     length::Float64
     alpha::Float64
     gamma::Float64
     beta::Vector{Float64}
     ssp::Bool # supercontinuum generation
-    raman::Bool
+    Raman::Bool
 end 
 
-mutable struct asmf # active single mode fiber
+mutable struct asmf <: smf # active single mode fiber
     length::Float64
     alpha::Float64
     gamma::Float64
     beta::Vector{Float64}
     ssp::Bool # supercontinuum generation
-    raman::Bool
+    Raman::Bool
     # gain-medium fields 
     gssdB::Float64
     PsatdBm::Float64
@@ -66,10 +68,10 @@ Aeff [µm^2], gamma [1/(W km)], beta [ps^n/km]
 L [km]
 lam [nm] 
 """
-function create_smf(fData::Dict, L::Float64, lam::Float64)
+function create_nasmf(fData::Dict, L::Float64, lam::Float64)
     Aeff = create_Aeff(fData, lam)*1e12 # m^2 to um^2
     gamma = 1e4 * 2*π*fData["n2"]/(lam*Aeff) # W^-1 km^-1
-    return smf(L, fData["alpha"], gamma, fData["beta"], false, false)
+    return nasmf(L, fData["alpha"], gamma, fData["beta"], false, false)
 end
 
 """
