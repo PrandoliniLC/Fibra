@@ -12,7 +12,8 @@ using Printf
 include("phys_const.jl")
 include("fiber_types.jl")
 include("optic_types.jl")
-include("math_func.jl") 
+include("math_func.jl")
+#include("GNLSE.jl")
 
 # =========================================================================
 # INPUT FIELD PARAMETERS
@@ -57,7 +58,7 @@ smf4.length = 0.00045
 smf5 = smf1
 smf5.length = 0.001
 
-amp1 = fiber_types.create_asmf(fiber_types.PM1950, fiber_types.AMFparam, 0.0013, lamda0)
+amp1 = fiber_types.create_asmf(fiber_types.PM1950, fiber_types.AMFparam, 0.0013, lamda0, lamda0)
 # --------------------------------------------------------------------------
 
 # ==========================================================================
@@ -66,7 +67,7 @@ amp1 = fiber_types.create_asmf(fiber_types.PM1950, fiber_types.AMFparam, 0.0013,
 println()
 P_peak_N = N2 * abs(smf1.beta[3]) / (smf1.gamma * (tfwhm / 1.7627)^2)
 E_N      = 2 * abs(smf1.beta[3]) / (smf1.gamma * (tfwhm / 1.7627))
-@printf("N^2=1 soliton: Power = %f [W], Pulse Energy = %f [pJ]\n", P_peak_N, E_N)
+# @printf("N^2=1 soliton: Power = %f [W], Pulse Energy = %f [pJ]\n", P_peak_N, E_N)
 
 
 P_peak = N2 * abs(smf1.beta[3]) / (smf1.gamma * tfwhm^2) 
@@ -103,5 +104,23 @@ rho_out = 0.60   # Output coupler
 PhaseShift = 95 * pi / 180
 # --------------------------------------------------------------------------
 
+# ==========================================================================
+# Being loop
+# ==========================================================================
+println("\nInteraction Picture Method started")
+t_start = time_ns()
 
+spec_z = Vector{Vector{Float64}}()
+u_z    = Vector{Vector{ComplexF64}}()
+
+u = copy(u0)
+N_trip = 25
+
+#u, _, _ = GNLSE.IP_CQEM_FD(u, dt, dz, smf5, f0, tol, 1, 1)
+
+#local ufo, ubo, uf, ub, ud, ur, uout   # will hold last-loop values, used after the loop
+
+for ii in 1:N_trip
+#    @printf("Round trip %d / %d\n", ii, N_trip)
+end
 end

@@ -37,7 +37,7 @@ function filter_gauss(ui::Complex{Float64}, fl::filter)
     return uo
 end
 
-#=
+
 """
     filter_lorentz_t(ui::Complex{Float64}, fl::filter)
 
@@ -66,7 +66,7 @@ function filter_lorentz_tf(ui::Complex{Float64}, fl::filter)
 
     return uo
 end
-=#
+
 
 
 end # module optic_types

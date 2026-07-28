@@ -1,4 +1,38 @@
-module nonlinear
+module GNLSE
+
+using FFTW
+#import Printf
+
+#show(GNLSE)
+
+"""
+    IP_CQEM_FD(u0, dt, dz, mod, fo, tol, dplot, quiet)
+
+Solves the Generalized Nonlinear Schrodinger Equation with the complete
+Raman response for pulse propagation in an optical fiber using the
+Interaction Picture Method combined with the Conserved Quantity Error
+method for step-size determination and frequency-domain integration of
+the nonlinear operator.
+
+# Arguments
+- `u0`    : starting field amplitude (Complex vector)
+- `dt`    : time step [ps]
+- `dz`    : initial step size
+- `mod`   : propagation module parameters (Dict), with keys
+            :length      - propagation distance
+            :alpha  - power loss coefficient, i.e. P = P0*exp(-alpha*z)
+            :gamma  - nonlinearity coefficient
+            :beta  - dispersion Taylor coefficients [beta_0 ... beta_m]
+- `fo`    : central frequency of the simulation (THz)
+- `tol`   : relative photon error
+- `dplot` : if 1, plot data will be packed
+- `quiet` : if true, suppress progress printout
+
+# Returns
+- `u1`       : field at the output
+- `nf`       : number of FFTs performed
+- `Plotdata` : Dict with saved propagation data (or 0 if dplot != 1)
+"""
 
 """
 Need more rigorous documentation include where do we get the values
@@ -10,6 +44,39 @@ Also function is not tested if Raman is true
 
 # Returns
 - `uo` : filtered field amplitude
+"""
+function IP_CQEM_FD(u0, dt, dz, mod, fo, tol, dplot, quiet)
+
+    nt = length(u0)                                      # number of sample points
+    w = fftshift(2*pi .* (-(nt÷2):(nt÷2 - 1)) ./ (dt*nt)) # angular frequencies
+    t = (-(nt÷2):1:(nt÷2 - 1)) .* dt                      # time vector (ps)
+
+    # calculate the raman response function in frequency domain
+    hrw, fr = Raman_response_w(t, mod)
+
+ # preparation before the IPM
+    ufft = fft(u0)
+    propagedlength = 0.0
+    u1 = copy(u0)
+    nf = 1
+
+    if isa(mod, asmf)
+        show(filter)
+        gain_w = filter_lorentz_tf(u1, mod.fbw, mod.fc, fo, 1/(dt*nt))
+        alpha_0 = mod.alpha
+    end
+end
+
+"""
+Computes the Raman response (needs to be tested)
+
+# Arguments
+- `t`  : time vector
+- `mod`  : single mode fiber
+
+# Returns
+- `hrw`
+- `fr`
 """
 function Raman_response_w(t::Vector(Float64), mod::smf)
 
@@ -46,6 +113,38 @@ function Raman_response_w(t::Vector(Float64), mod::smf)
 
     return hrw, fr
 
+end
+
+"""
+    filter_lorentz_t(ui::Complex{Float64}, gain_fbw, gain_fc, f0, df)
+
+Compute the transfer function of a Lorentzian filter on the time domain.
+
+# Arguments
+- `ui`          : input field complex amplitude
+- `gain_fbw`    : gain bandwidth
+- `gain_fc`     : gain center freq.
+- f0            : center freq. of pulse
+- df            : freq. step size 
+
+# Returns
+- `tf` : normalized Lorentzian transfer function
+"""
+function filter_lorentz_tf(ui::Complex{Float64}, gain_fbw, gain_fc, f0, df)
+
+    N = length(ui)
+
+    # Frequency vector (THz)
+    f = ((-N÷2):(N÷2-1)) * df + f0
+
+    # Lorentzian transfer function
+    tf = (gain_fbw / (2π)) / ((f - gain_fc)^2 + (gain_fbw/ 2)^2)
+
+    # Normalize to a maximum value of 1
+    tf ./= maximum(tf)
+    uo = ui .* tf
+
+    return uo
 end
 
 

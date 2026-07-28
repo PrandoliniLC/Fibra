@@ -5,28 +5,28 @@ include("phys_const.jl")
 abstract type smf end
 
 mutable struct nasmf <: smf # non-active single mode fiber
-    length::Float64
-    alpha::Float64
-    gamma::Float64
-    beta::Vector{Float64}
+    length::Float64         # [km] Length
+    alpha::Float64          # [1/km] attenuation coefficient
+    gamma::Float64          # [1/(W km)] fiber nonlinear coefficient
+    beta::Vector{Float64}      # beta coefficients (ps^n/km)
     ssp::Bool # supercontinuum generation
     Raman::Bool
 end 
 
 mutable struct asmf <: smf # active single mode fiber
-    length::Float64
-    alpha::Float64
-    gamma::Float64
-    beta::Vector{Float64}
-    ssp::Bool # supercontinuum generation
-    Raman::Bool
+    length::Float64         # [km] Length 
+    alpha::Float64          # [1/km] attenuation coefficient
+    gamma::Float64          # [1/(W km)] fiber nonlinear coefficient
+    beta::Vector{Float64}   # beta coefficients (ps^n/km)
+    ssp::Bool               # supercontinuum generation
+    Raman::Bool             # Raman active
     # gain-medium fields 
-    gssdB::Float64
-    PsatdBm::Float64
-    lamda_gain::Float64
-    lamda_bw::Float64
-    fc::Float64
-    fbw::Float64
+    gssdB::Float64          # [dB] small signal gain coefficient
+    PsatdBm::Float64        # [dBm] saturation input power 
+    lam_gain::Float64       # [nm] center of gain 
+    lam_bw::Float64         # [nm] gain bandwidth
+    fc::Float64             # [THz] center of gain 
+    fbw::Float64            # [THz] bandwidth of gain 
 end 
 
 # https://www.coherent.com/components-accessories/specialty-optical-fibers/single-mode/SM1950
@@ -80,10 +80,10 @@ Aeff [µm^2], gamma [1/(W km)], beta [ps^n/km]
 L [km]
 lam [nm] 
 """
-function create_asmf(fData::Dict, aData::Dict, L::Float64, lam::Float64)
+function create_asmf(fData::Dict, aData::Dict, L::Float64, lam::Float64, lam_gain::Float64)
     Aeff = create_Aeff(fData, lam)*1e12 # m^2 to um^2
     gamma = 1e4 * 2*π*fData["n2"]/(lam*Aeff) # W^-1 km^-1
-    return asmf(L, fData["alpha"], gamma, fData["beta"], false, false, aData["small_signal_gain"], aData["saturation_power"], lam, aData["gain_bandwidth"], phys_const.c/lam, phys_const.c*aData["gain_bandwidth"]/lam^2)
+    return asmf(L, fData["alpha"], gamma, fData["beta"], false, false, aData["small_signal_gain"], aData["saturation_power"], lam_gain, aData["gain_bandwidth"], phys_const.c/lam_gain, phys_const.c*aData["gain_bandwidth"]/lam_gain^2)
 end
 
 end # module fiber_types    
