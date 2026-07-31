@@ -1,5 +1,7 @@
 module GNLSE
 
+import Main.Fibra.fiber_types: smf, nasmf, asmf
+
 using FFTW
 #import Printf
 
@@ -45,14 +47,14 @@ Also function is not tested if Raman is true
 # Returns
 - `uo` : filtered field amplitude
 """
-function IP_CQEM_FD(u0, dt, dz, mod, fo, tol, dplot, quiet)
+function IP_CQEM_FD(u0::Vector{Float64}, dt::Float64, dz::Float64, mod::smf, fo::Float64, tol::Float64, dplot::Bool, quiet::Bool)
 
     nt = length(u0)                                      # number of sample points
     w = fftshift(2*pi .* (-(nt÷2):(nt÷2 - 1)) ./ (dt*nt)) # angular frequencies
-    t = (-(nt÷2):1:(nt÷2 - 1)) .* dt                      # time vector (ps)
+    t = collect((-(nt÷2):1:(nt÷2 - 1)) .* dt)                      # time vector (ps)
 
     # calculate the raman response function in frequency domain
-    hrw, fr = Raman_response_w(t, mod)
+    hrw, fr = Raman_response_w(t::Vector{Float64}, mod::smf)
 
  # preparation before the IPM
     ufft = fft(u0)
@@ -61,10 +63,11 @@ function IP_CQEM_FD(u0, dt, dz, mod, fo, tol, dplot, quiet)
     nf = 1
 
     if isa(mod, asmf)
-        show(filter)
+        @show(filter)
         gain_w = filter_lorentz_tf(u1, mod.fbw, mod.fc, fo, 1/(dt*nt))
         alpha_0 = mod.alpha
     end
+    return u1
 end
 
 """
@@ -78,8 +81,9 @@ Computes the Raman response (needs to be tested)
 - `hrw`
 - `fr`
 """
-function Raman_response_w(t::Vector(Float64), mod::smf)
 
+function Raman_response_w(t::Vector{Float64}, mod::smf)
+#=
     # Raman response disabled
     if ~mod.Raman
         return 0.0, 0.0
@@ -110,10 +114,14 @@ function Raman_response_w(t::Vector(Float64), mod::smf)
     hr = (fa + fc) .* ha .+ fb .* hb
 
     hrw = fft(hr)
-
+=#
+fr = 0.245
+hrw = 5.0
     return hrw, fr
 
 end
+
+
 
 """
     filter_lorentz_t(ui::Complex{Float64}, gain_fbw, gain_fc, f0, df)
@@ -130,7 +138,7 @@ Compute the transfer function of a Lorentzian filter on the time domain.
 # Returns
 - `tf` : normalized Lorentzian transfer function
 """
-function filter_lorentz_tf(ui::Complex{Float64}, gain_fbw, gain_fc, f0, df)
+function filter_lorentz_tf(ui::Complex{Float64}, gain_fbw::Float64, gain_fc::Float64, f0::Float64, df::Float64)
 
     N = length(ui)
 
@@ -146,6 +154,5 @@ function filter_lorentz_tf(ui::Complex{Float64}, gain_fbw, gain_fc, f0, df)
 
     return uo
 end
-
 
 end

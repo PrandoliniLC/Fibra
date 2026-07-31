@@ -13,7 +13,7 @@ include("phys_const.jl")
 include("fiber_types.jl")
 include("optic_types.jl")
 include("math_func.jl")
-#include("GNLSE.jl")
+include("GNLSE.jl")
 
 # =========================================================================
 # INPUT FIELD PARAMETERS
@@ -116,7 +116,9 @@ u_z    = Vector{Vector{ComplexF64}}()
 u = copy(u0)
 N_trip = 25
 
-#u, _, _ = GNLSE.IP_CQEM_FD(u, dt, dz, smf5, f0, tol, 1, 1)
+#u, _, _ = GNLSE.IP_CQEM_FD(u, dt, dz, smf5, f0, tol, true, true)
+u = GNLSE.IP_CQEM_FD(u, dt, dz, smf1, f0, tol, true, true)
+
 
 #local ufo, ubo, uf, ub, ud, ur, uout   # will hold last-loop values, used after the loop
 
