@@ -117,7 +117,7 @@ u = copy(u0)
 N_trip = 25
 
 #u, _, _ = GNLSE.IP_CQEM_FD(u, dt, dz, smf5, f0, tol, true, true)
-u = GNLSE.IP_CQEM_FD(u, dt, dz, smf1, f0, tol, true, true)
+u = GNLSE.IP_CQEM_FD(u, dt, dz, amp1, f0, tol, true, true)
 
 
 #local ufo, ubo, uf, ub, ud, ur, uout   # will hold last-loop values, used after the loop

@@ -61,10 +61,10 @@ function IP_CQEM_FD(u0::Vector{Float64}, dt::Float64, dz::Float64, mod::smf, fo:
     propagedlength = 0.0
     u1 = copy(u0)
     nf = 1
+    @show(typeof(mod))
 
     if isa(mod, asmf)
-        @show(filter)
-        gain_w = filter_lorentz_tf(u1, mod.fbw, mod.fc, fo, 1/(dt*nt))
+        #gain_w = filter_lorentz_tf(u1, mod.fbw, mod.fc, fo, 1/(dt*nt))
         alpha_0 = mod.alpha
     end
     return u1
@@ -124,7 +124,7 @@ end
 
 
 """
-    filter_lorentz_t(ui::Complex{Float64}, gain_fbw, gain_fc, f0, df)
+    filter_lorentz_t(ui::ComplexF64, gain_fbw, gain_fc, f0, df)
 
 Compute the transfer function of a Lorentzian filter on the time domain.
 
@@ -138,7 +138,7 @@ Compute the transfer function of a Lorentzian filter on the time domain.
 # Returns
 - `tf` : normalized Lorentzian transfer function
 """
-function filter_lorentz_tf(ui::Complex{Float64}, gain_fbw::Float64, gain_fc::Float64, f0::Float64, df::Float64)
+function filter_lorentz_tf(ui::Vector{Float64}, gain_fbw::Float64, gain_fc::Float64, f0::Float64, df::Float64)
 
     N = length(ui)
 

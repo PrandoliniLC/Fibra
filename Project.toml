@@ -1,9 +1,15 @@
 name = "Fibra"
 uuid = "06ee0f18-ba6e-4056-8a72-49a37fb2018e"
-authors = ["Mark Prandolini"]
 version = "1.0.0-DEV"
+authors = ["Mark Prandolini"]
+
+[deps]
+DSP = "717857b8-e6f2-59f4-9121-6e50c889abd2"
+Polynomials = "f27b6e38-b328-58d1-80ce-0feddd5e7a45"
 
 [compat]
+DSP = "0.8.6"
+Polynomials = "4.1.1"
 julia = "1.10.10"
 
 [extras]
