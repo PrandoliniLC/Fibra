@@ -140,8 +140,6 @@ function Raman_response_w(t::Vector{Float64}, mod::smf)
     end
 end
 
-
-
 """
     filter_lorentz_t(ui::Complex{Float64}, gain_fbw, gain_fc, f0, df)
 
@@ -196,7 +194,7 @@ function gain_saturated2(Pin0::Float64, gssdB::Float64, PsatdBm::Float64)
     gain = gss / (1.0 + Pin0/Psat)
     return gain
 end
-
+#=
 """
 Need to finish this function, it is not tested yet
     gain_saturated3(Pin,GssdB,PsatdBm) 
@@ -241,4 +239,6 @@ end
 
 end
 """
+
+=#
 end
