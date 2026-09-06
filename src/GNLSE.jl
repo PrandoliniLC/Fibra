@@ -194,7 +194,7 @@ function gain_saturated2(Pin0::Float64, gssdB::Float64, PsatdBm::Float64)
     gain = gss / (1.0 + Pin0/Psat)
     return gain
 end
-
+# fit it belwow
 #=
 """
 Need to finish this function, it is not tested yet
