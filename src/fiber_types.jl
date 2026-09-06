@@ -71,7 +71,7 @@ lam [nm]
 function create_nasmf(fData::Dict, L::Float64, lam::Float64)
     Aeff = create_Aeff(fData, lam)*1e12 # m^2 to um^2
     gamma = 1e4 * 2*π*fData["n2"]/(lam*Aeff) # W^-1 km^-1
-    return nasmf(L, fData["alpha"], gamma, fData["beta"], false, false)
+    return nasmf(L, fData["alpha"], gamma, fData["beta"], false, true)
 end
 
 """

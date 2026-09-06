@@ -3,7 +3,7 @@ module GNLSE
 import Main.Fibra.fiber_types: smf, nasmf, asmf
 
 using FFTW
-#import Printf
+using Printf
 
 #show(GNLSE)
 
@@ -47,8 +47,9 @@ Also function is not tested if Raman is true
 # Returns
 - `uo` : filtered field amplitude
 """
-function IP_CQEM_FD(u0::Vector{Float64}, dt::Float64, dz::Float64, mod::smf, fo::Float64, tol::Float64, dplot::Bool, quiet::Bool)
+function IP_CQEM_FD(u0::Vector{ComplexF64}, dt::Float64, dz::Float64, mod::smf, fo::Float64, tol::Float64, dplot::Bool, quiet::Bool)
 
+    println("Starting IP_CQEM_FD")
     nt = length(u0)                                      # number of sample points
     w = fftshift(2*pi .* (-(nt÷2):(nt÷2 - 1)) ./ (dt*nt)) # angular frequencies
     t = collect((-(nt÷2):1:(nt÷2 - 1)) .* dt)                      # time vector (ps)
@@ -61,12 +62,43 @@ function IP_CQEM_FD(u0::Vector{Float64}, dt::Float64, dz::Float64, mod::smf, fo:
     propagedlength = 0.0
     u1 = copy(u0)
     nf = 1
-    @show(typeof(mod))
 
     if isa(mod, asmf)
-        #gain_w = filter_lorentz_tf(u1, mod.fbw, mod.fc, fo, 1/(dt*nt))
+        @show(filter)
+        gain_w = filter_lorentz_tf(u1, mod.fbw, mod.fc, fo, 1/(dt*nt))
         alpha_0 = mod.alpha
     end
+
+    if dplot == true
+        z_all = Float64[]
+        ufft_z = Matrix{ComplexF64}(undef, 0, nt)
+        u_z = Matrix{ComplexF64}(undef, 0, nt)
+    end
+
+    if !quiet
+        print("\nSimulation running...      ")
+    end
+
+    while propagedlength < mod.length
+
+        if (dz + propagedlength) > mod.length
+            dz = mod.length - propagedlength
+        end
+
+        # (re)constructing linear operator
+        if isa(mod, asmf)
+            # modify alpha to include gain
+            Pin0 = sum(u1 .* conj.(u1)) / nt
+            gain = gain_saturated2(Pin0, mod.gssdB, mod.PsatdBm) .* gain_w
+            mod.alpha = alpha_0 .- gain
+        end
+        
+        LOP = Linearoperator_w(mod.alpha, mod.beta, w)
+
+
+        
+    end
+
     return u1
 end
 
@@ -81,50 +113,37 @@ Computes the Raman response (needs to be tested)
 - `hrw`
 - `fr`
 """
-
 function Raman_response_w(t::Vector{Float64}, mod::smf)
-#=
-    # Raman response disabled
+
     if ~mod.Raman
         return 0.0, 0.0
+    else
+        # Raman parameters (ps)
+        t1 = 12.2e-3
+        t2 = 32e-3
+        tb = 96e-3
+        fc = 0.04
+        fb = 0.21
+        fa = 1.0 - fc - fb
+        fr = 0.245      # fractional contribution of the delayed Raman response
+        
+        # Time vector beginning at zero
+        tres = t .- first(t)
+        
+        # Raman response components
+        ha = ((t1^2 + t2^2) / (t1 * t2^2)) .* exp.(-tres ./ t2) .* sin.(tres ./ t1)
+        hb = ((2tb .- tres) ./ tb^2) .* exp.(-tres ./ tb)
+        hr = (fa + fc) .* ha .+ fb .* hb
+        
+        hrw = fft(hr)
+        return hrw, fr
     end
-
-    # Raman parameters (ps)
-    t1 = 12.2e-3
-    t2 = 32e-3
-    tb = 96e-3
-
-    fc = 0.04
-    fb = 0.21
-    fa = 1.0 - fc - fb
-
-    fr = 0.245
-
-    # Time vector beginning at zero
-    tres = t .- first(t)
-
-    # Raman response components
-    ha = ((t1^2 + t2^2) / (t1 * t2^2)) .*
-         exp.(-tres ./ t2) .*
-         sin.(tres ./ t1)
-
-    hb = ((2tb .- tres) ./ tb^2) .*
-         exp.(-tres ./ tb)
-
-    hr = (fa + fc) .* ha .+ fb .* hb
-
-    hrw = fft(hr)
-=#
-fr = 0.245
-hrw = 5.0
-    return hrw, fr
-
 end
 
 
 
 """
-    filter_lorentz_t(ui::ComplexF64, gain_fbw, gain_fc, f0, df)
+    filter_lorentz_t(ui::Complex{Float64}, gain_fbw, gain_fc, f0, df)
 
 Compute the transfer function of a Lorentzian filter on the time domain.
 
@@ -138,7 +157,7 @@ Compute the transfer function of a Lorentzian filter on the time domain.
 # Returns
 - `tf` : normalized Lorentzian transfer function
 """
-function filter_lorentz_tf(ui::Vector{Float64}, gain_fbw::Float64, gain_fc::Float64, f0::Float64, df::Float64)
+function filter_lorentz_tf(ui::Complex{Float64}, gain_fbw::Float64, gain_fc::Float64, f0::Float64, df::Float64)
 
     N = length(ui)
 
@@ -155,4 +174,71 @@ function filter_lorentz_tf(ui::Vector{Float64}, gain_fbw::Float64, gain_fc::Floa
     return uo
 end
 
+""" 
+    gain_saturated2(Pin0, gssdB, PsatdBm)
+    calculate the gain coefficient of the amplifier given the input power, 
+    the small signal gain coefficient and saturation power
+    # Arguments
+    - Pin: input average power (W)
+    - gssdB: small signal gain coefficient(dB)
+    - PsdBm : saturation input power(dBm)
+
+    # Returns
+    - gain: gain coefficient of the amplifier
+"""
+function gain_saturated2(Pin0::Float64, gssdB::Float64, PsatdBm::Float64)
+    # convert dB to linear
+    gss = 10.0^(gssdB/10.0)
+    
+    # convert dBm to W
+    Psat = (10.0^(PsatdBm/10.0))/1000.0
+    # calculate the gain coefficient of the amplifier
+    gain = gss / (1.0 + Pin0/Psat)
+    return gain
+end
+
+"""
+Need to finish this function, it is not tested yet
+    gain_saturated3(Pin,GssdB,PsatdBm) 
+    calculate the gain of the amplifier given the input power, the small
+    signal gain and saturation power 
+    # Arguments
+    - Pin: input power
+    - GssdB: small signal gain(dB)
+    - PsatdBm : saturation input power(dBm)
+     
+    source code by CJH
+
+% G is the saturated gain 
+%       G = Gss*exp(-(G-1)Pin/Psat) (eq1)
+"""
+function gain_saturated3(Pin::Float64, GssdB::Float64, PsatdBm::Float64)
+
+gss = 10.0^(GssdB/10.0)
+Psat = (10.0^(PsatdBm/10.0))/1000.0
+
+# numerical calculation of G
+G = fzero(@(G)(G-Gss*exp(-(G-1)*Pin/Psat)),Gss/10);
+
+return G
+end
+
+"""
+Need to finish this function, it is not tested yet
+function [ LOP ] = Linearoperator_w( alpha,betaw,w )
+%Linearoperator_w Summary of this function goes here
+%   Detailed explanation goes here
+
+LOP = -fftshift(alpha/2);
+if (length(betaw) == length(w))     % If the user manually specifies beta(w)
+    LOP = LOP - 1i*betaw;
+    LOP = fftshift(LOP);
+else
+    for ii = 0:length(betaw)-1;
+        LOP = LOP - 1i*betaw(ii+1)*(w).^ii/factorial(ii);
+    end
+end
+
+end
+"""
 end
